@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
+const ObjectId = require('mongodb').ObjectId;
 const port = process.env.PORT || 5000;
 const app =express();
 
@@ -20,10 +21,62 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run(){
     try{
         await client.connect();
-        const dream_holidays= client.db('dream_holidays').collection('travelPackage');
-        const myDocTest = {name:'Air show', area:'bangladesh'}
+        const allPackages= client.db('dream_holidays').collection('travelPackage');
+        const orderData= client.db('dream_holidays').collection('orderData');
+    const clientFeedback = client.db('dream_holidays').collection('clientFeedback');
+        
 
-        const result = dream_holidays.insertOne(myDocTest);
+        
+        // homePackages GET API 
+        app.get('/homepackage', async(req, res)=>{
+            const result  = await allPackages.find({}).toArray();
+            res.json(result)
+        });
+
+        // packageDetails GET API
+        app.get('/packageDetails/:id', async(req, res)=>{
+            const id=req.params.id;
+            const result  = await allPackages.findOne({_id:ObjectId(id)});
+           
+            res.json(result)
+        });
+
+        // order confirm data POST API 
+        app.post('/packageDetails/:id', async(req, res)=>{
+            const result  = await orderData.insertOne(req.body);
+           
+            res.json(result)
+        });
+            // client feedback data GET API
+            app.get('/feedback', async(req, res)=>{
+
+                const result = await clientFeedback.find({}).toArray();
+                res.json(result)
+            })
+           
+          // Add new package POS API
+         app.post('/addNew',async(req, res)=>{
+            
+            const result  = await allPackages.insertOne(req.body);
+             res.send(result)
+         })  
+
+         // order data GET API
+         app.get('/order', async(req, res)=>{
+            
+            const result  = await orderData.find({}).toArray();
+            res.json(result)
+        });
+
+        // Order DELETE API
+        app.delete('/deleteOrder/:id', async(req, res)=>{
+            const id= req.params.id;
+            const result = await orderData.deleteOne({_id:ObjectId(id)});
+            res.json(result)
+            
+        });
+
+
     }
     finally{
     //  await client.close();
