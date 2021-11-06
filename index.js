@@ -24,13 +24,14 @@ async function run(){
         const allPackages= client.db('dream_holidays').collection('travelPackage');
         const orderData= client.db('dream_holidays').collection('orderData');
     const clientFeedback = client.db('dream_holidays').collection('clientFeedback');
+    const myOrders = client.db('dream_holidays').collection('myOrders');
         
 
         
         // homePackages GET API 
         app.get('/homepackage', async(req, res)=>{
             const result  = await allPackages.find({}).toArray();
-            res.json(result)
+            res.send(result)
         });
 
         // packageDetails GET API
@@ -75,6 +76,19 @@ async function run(){
             res.json(result)
             
         });
+        // my order delete
+        app.delete('/myorders/:id', async(req, res)=>{
+            const id= req.params.id;
+            const result = await orderData.deleteOne({_id:ObjectId(id)});
+            res.json(result)
+            
+        });
+        // my orders 
+        app.get('/myorders/:email', async(req, res)=>{
+            const email= req.params.email;
+            const result  = await orderData.find({email:email}).toArray();
+           res.json(result);
+        })
 
 
     }
